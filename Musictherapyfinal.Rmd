@@ -1,0 +1,100 @@
+---
+title: "Assignment Music Therapy"
+author: "Adarsh Dalmia and Priyankar Dey"
+date: '2023-01-16'
+output: pdf_document
+---
+
+```{r}
+tinytex::install_tinytex(force=TRUE)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+mdata=read.csv("Music Therapy.csv")
+# Drop rows where age is over 60
+
+md2 <- subset(mdata, Age <= 60 )
+# Drop rows where Hours.per.day is over 15
+
+md3 <- subset(md2, Hours.per.day <= 15 )
+# Drop rows where BPM is over 250
+
+md4 <- subset(md3, BPM <= 250 )
+# Drop columns Timestamp, Permissions
+
+md5 = subset(md4, select = -c(Timestamp,Permissions) )
+#1. Which is the most popular music streaming application?
+streamingpt=md5%>%filter(Primary.streaming.service !="")%>%
+  group_by(Primary.streaming.service)%>%
+  summarize(users=n())%>%arrange(desc(users))
+streamingpt
+ggplot(streamingpt,aes(Primary.streaming.service,users))+
+  geom_col(fill='green')
+
+#Spotify is the most popular music streaming application.It can be because Spotify is the most innovative and captivating application.
+#It has an impressive catalog of exclusive music, also an atmosphere of "no limits" - something many other competitors fail to offer.
+
+#2.What genre music is being listened by people with anxiety and what is the impact of the different genres on the indiviuals.
+md6=subset(md5,select=c(Fav.genre,Anxiety,Music.effects))%>%
+  filter(Music.effects!="")%>%filter(Anxiety>0)
+ggplot(md6,aes(x=Fav.genre,fill=Music.effects))+geom_bar(position='dodge')+
+  labs(title='Music Effect on Anxiety')
+
+#It can be observed that Rock music is being listened by maximum people. and It can also be seen that maximum people's condition also improve by the same.
+
+#3.For the different problems (Anxiety, Depression, Insomnia and OCD), which are the most favourite genre.
+data41=subset(md5,select=c(Fav.genre,Anxiety))%>%filter(between(Anxiety,1,10))%>%
+  group_by(Fav.genre)%>%
+  summarise(genre=n())
+g1=ggplot(data41,aes(Fav.genre,genre))+geom_col(fill='blue')+
+  theme(axis.text.x= element_text(size =10, angle = 90))
+data42=subset(md5,select=c(Fav.genre,Depression))%>%filter(between(Depression,1,10))%>%
+  group_by(Fav.genre)%>%
+  summarise(genre=n())
+g2=ggplot(data42,aes(Fav.genre,genre))+geom_col(fill='purple')+
+  theme(axis.text.x= element_text(size =10, angle = 90))
+data43=subset(md5,select=c(Fav.genre,Insomnia))%>%filter(between(Insomnia,1,10))%>%
+  group_by(Fav.genre)%>%
+  summarise(genre=n())
+g3=ggplot(data43,aes(Fav.genre,genre))+geom_col(fill='yellow')+
+  theme(axis.text.x= element_text(size =10, angle = 90))
+data44=subset(md5,select=c(Fav.genre,OCD))%>%filter(between(OCD,1,10))%>%
+  group_by(Fav.genre)%>%
+  summarise(genre=n())
+g4=ggplot(data44,aes(Fav.genre,genre))+geom_col(fill='green')+
+  theme(axis.text.x= element_text(size =10, angle = 90))
+grid.arrange(g1,g2,g3,g4,ncol=2)
+
+#Rock is the most preferred genre throughout for all the problem. A study reveals that the genre of music that has the most suicides is rock music. This is likely because rock music often deals with dark and depressing topics, such as death, loss, and betrayal. Rock music can also be very aggressive and angsty, which can contribute to feelings of hopelessness and despair.
+
+#4.Is there a relationship between the age of music listeners and the time they spend listening to music?
+ggplot(data = md5, aes( x = Age, y = Hours.per.day)) +
+  geom_smooth (method = 'lm', colour = "blue")+
+  labs(title='relationship between Age and Hours of music listened to daily')
+
+#As can be seen from the graph, there is a perfect linear relationship between the the age and the time dedicated to music. As age increases, the time contributed to listening to music decreases.
+
+#5. Is there a relation between an individual being an instrumentalist and them listening to music?
+data5=subset(md5,select=c(Hours.per.day,Instrumentalist))%>%filter(Instrumentalist!="")
+data5$Instrumentalist[data5$Instrumentalist=='Yes']=c(1)
+data5$Instrumentalist[data5$Instrumentalist=='No']=c(0)
+ggplot(data5,aes(Hours.per.day,Instrumentalist))+geom_point(aes(color = Instrumentalist))
+
+#It doesn't matter whether an individual is an instrumentalist or not, the hours dedicated to listening to music is evenly psread between the two categories.
+
+#6.Which age group suppers from mental issues the most?
+G1=ggplot(data = md5, aes(x = Age, y = Depression)) + geom_smooth(colour = "purple") +
+  labs(title = "Age distribition Depression")
+G2=ggplot(data = md5, aes(x = Age, y = Anxiety)) + geom_smooth(colour = "purple") + 
+  labs(title = "Age distribition Anxiety")
+G3=ggplot(data = md5, aes(x = Age, y = Insomnia)) + geom_smooth(colour = "purple") + 
+  labs(title = "Age distribition Insomnia")
+G4=ggplot(data = md5, aes(x = Age, y = OCD)) + geom_smooth(colour = "purple") + 
+  labs(title = "Age distribition OCD")
+grid.arrange(G1,G2,G3,G4)
+
+#On an average, people between the age group 20-40 face greater mental issues as compared to other age groups. This is probably because this the prime time of an individual's life when they become responsible and step out into a more competitive world. Greater challenges often create mental stress and other related issues.
+```
+
+
